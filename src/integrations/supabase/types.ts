@@ -285,6 +285,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_invitation: { Args: { _token: string }; Returns: string }
       can_edit_family: {
         Args: { _family: string; _user: string }
         Returns: boolean

@@ -55,9 +55,9 @@ Return ONLY valid JSON with these keys. Use null for unknown fields.`;
 
       const payload = await res.json();
       const content = payload?.choices?.[0]?.message?.content ?? "{}";
-      let parsed: Record<string, unknown> = {};
+      let parsed: Record<string, string | null> = {};
       try {
-        parsed = JSON.parse(content);
+        parsed = JSON.parse(content) as Record<string, string | null>;
       } catch {
         parsed = {};
       }

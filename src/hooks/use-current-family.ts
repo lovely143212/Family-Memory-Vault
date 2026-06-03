@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export type FamilyMembership = {
   family_id: string;
@@ -32,7 +33,7 @@ export async function logActivity(params: {
   action: string;
   entity_type?: string;
   entity_id?: string;
-  metadata?: Record<string, unknown>;
+  metadata?: Json;
 }) {
   const { data: userRes } = await supabase.auth.getUser();
   if (!userRes.user) return;

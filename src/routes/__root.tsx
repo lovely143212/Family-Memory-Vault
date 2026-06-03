@@ -80,14 +80,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "Memory Vault" },
+      { name: "description", content: "Securely store, organize, and share family documents with automated expiry reminders." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "Memory Vault" },
+      { property: "og:description", content: "Securely store, organize, and share family documents with automated expiry reminders." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Memory Vault" },
+      { name: "twitter:description", content: "Securely store, organize, and share family documents with automated expiry reminders." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d50e108b-b728-47c4-afa6-6498d560f03d/id-preview-2077a4e8--6c92e914-6a41-4111-98ca-c1b5d91f01ff.lovable.app-1780446520891.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d50e108b-b728-47c4-afa6-6498d560f03d/id-preview-2077a4e8--6c92e914-6a41-4111-98ca-c1b5d91f01ff.lovable.app-1780446520891.png" },
     ],
     links: [
       {

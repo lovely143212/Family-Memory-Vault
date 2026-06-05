@@ -11,6 +11,7 @@ export default defineConfig({
     server: {
       allowedHosts: [
         "family-memory-vault-1.onrender.com",
+        "family-memory-vault-production.up.railway.app",
       ],
     },
   },

@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrentFamily } from "@/hooks/use-current-family";
 import { CategoryBadge } from "@/components/category-badge";
 import { ExpiryPill } from "@/components/expiry-pill";
-import { FileText, Bell, Upload, AlertTriangle } from "lucide-react";
+import { QuickAccessGrid } from "@/components/quick-access-grid";
+import { FileText, Bell, Upload, AlertTriangle, Star, Pin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 
@@ -34,7 +35,35 @@ function DashboardPage() {
         .from("documents").select("id,title,category,created_at")
         .eq("family_id", familyId)
         .order("created_at", { ascending: false }).limit(5);
-      return { total: total ?? 0, expiring: expiring ?? [], recent: recent ?? [] };
+      const { data: pinned } = await supabase
+        .from("documents").select("id,title,category,document_number,expiry_date")
+        .eq("family_id", familyId).eq("is_pinned", true).limit(10);
+      const { data: favorites } = await supabase
+        .from("documents").select("id,title,category,document_number,expiry_date")
+        .eq("family_id", familyId).eq("is_favorite", true).limit(10);
+      const { data: allForQuick } = await supabase
+        .from("documents").select("id,title,category,document_number")
+        .eq("family_id", familyId).limit(500);
+      const { data: views } = await supabase
+        .from("document_views").select("document_id,viewed_at,documents(id,title,category,expiry_date)")
+        .order("viewed_at", { ascending: false }).limit(20);
+      // Deduplicate recently viewed
+      const seen = new Set<string>();
+      const recentlyViewed = (views ?? []).flatMap((v) => {
+        const d = v.documents as { id: string; title: string; category: string; expiry_date: string | null } | null;
+        if (!d || seen.has(d.id)) return [];
+        seen.add(d.id);
+        return [{ ...d, viewed_at: v.viewed_at }];
+      }).slice(0, 5);
+      return {
+        total: total ?? 0,
+        expiring: expiring ?? [],
+        recent: recent ?? [],
+        pinned: pinned ?? [],
+        favorites: favorites ?? [],
+        allForQuick: allForQuick ?? [],
+        recentlyViewed,
+      };
     },
   });
 
@@ -48,11 +77,33 @@ function DashboardPage() {
         <Button asChild><Link to="/upload"><Upload className="mr-2 h-4 w-4"/>Upload document</Link></Button>
       </div>
 
+      <div className="mb-6">
+        <QuickAccessGrid docs={stats.data?.allForQuick ?? []}/>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-3">
         <StatCard icon={FileText} label="Total documents" value={stats.data?.total ?? 0} tone="primary"/>
         <StatCard icon={AlertTriangle} label="Expiring (30d)" value={stats.data?.expiring.length ?? 0} tone="warning"/>
-        <StatCard icon={Bell} label="Recent uploads" value={stats.data?.recent.length ?? 0} tone="success"/>
+        <StatCard icon={Star} label="Favorites" value={stats.data?.favorites.length ?? 0} tone="success"/>
       </div>
+
+      {(stats.data?.pinned.length ?? 0) > 0 && (
+        <section className="mt-8 rounded-2xl border bg-surface-elevated p-6">
+          <div className="mb-4 flex items-center gap-2">
+            <Pin className="h-4 w-4 text-primary"/>
+            <h2 className="font-display text-lg font-semibold">Pinned</h2>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {(stats.data?.pinned ?? []).map((d) => (
+              <Link key={d.id} to="/documents/$id" params={{ id: d.id }}
+                className="flex items-center justify-between rounded-xl border bg-surface p-3 hover:border-primary/40">
+                <div className="flex items-center gap-3"><CategoryBadge value={d.category}/><span className="font-medium">{d.title}</span></div>
+                <ExpiryPill date={d.expiry_date}/>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <section className="rounded-2xl border bg-surface-elevated p-6">
@@ -76,20 +127,24 @@ function DashboardPage() {
 
         <section className="rounded-2xl border bg-surface-elevated p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-lg font-semibold">Recent uploads</h2>
-            <Link to="/documents" className="text-sm text-primary">View all</Link>
+            <h2 className="font-display text-lg font-semibold inline-flex items-center gap-2"><Clock className="h-4 w-4"/>Recently viewed</h2>
+            <Link to="/documents" className="text-sm text-primary">All documents</Link>
           </div>
           <ul className="space-y-3">
-            {(stats.data?.recent ?? []).map((d) => (
-              <li key={d.id} className="flex items-center justify-between rounded-xl border bg-surface p-3">
-                <div className="flex items-center gap-3">
-                  <CategoryBadge value={d.category}/>
-                  <span className="font-medium">{d.title}</span>
-                </div>
-                <span className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(d.created_at), { addSuffix: true })}</span>
+            {(stats.data?.recentlyViewed ?? []).map((d) => (
+              <li key={d.id}>
+                <Link to="/documents/$id" params={{ id: d.id }} className="flex items-center justify-between rounded-xl border bg-surface p-3 hover:border-primary/40">
+                  <div className="flex items-center gap-3">
+                    <CategoryBadge value={d.category}/>
+                    <span className="font-medium">{d.title}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(d.viewed_at), { addSuffix: true })}</span>
+                </Link>
               </li>
             ))}
-            {stats.data?.recent.length === 0 && <p className="text-sm text-muted-foreground">No documents yet. Upload your first one!</p>}
+            {stats.data?.recentlyViewed.length === 0 && (
+              <p className="text-sm text-muted-foreground">No views yet. <Link to="/documents" className="text-primary">Open a document →</Link></p>
+            )}
           </ul>
         </section>
       </div>

@@ -19,6 +19,7 @@ import { Route as AuthenticatedUploadRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedSharesRouteImport } from './routes/_authenticated/shares'
 import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
 import { Route as AuthenticatedRemindersRouteImport } from './routes/_authenticated/reminders'
+import { Route as AuthenticatedOfflineRouteImport } from './routes/_authenticated/offline'
 import { Route as AuthenticatedFamilyRouteImport } from './routes/_authenticated/family'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -74,6 +75,11 @@ const AuthenticatedRemindersRoute = AuthenticatedRemindersRouteImport.update({
   path: '/reminders',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedOfflineRoute = AuthenticatedOfflineRouteImport.update({
+  id: '/offline',
+  path: '/offline',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedFamilyRoute = AuthenticatedFamilyRouteImport.update({
   id: '/family',
   path: '/family',
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRouteWithChildren
   '/family': typeof AuthenticatedFamilyRoute
+  '/offline': typeof AuthenticatedOfflineRoute
   '/reminders': typeof AuthenticatedRemindersRoute
   '/search': typeof AuthenticatedSearchRoute
   '/shares': typeof AuthenticatedSharesRoute
@@ -125,6 +132,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRouteWithChildren
   '/family': typeof AuthenticatedFamilyRoute
+  '/offline': typeof AuthenticatedOfflineRoute
   '/reminders': typeof AuthenticatedRemindersRoute
   '/search': typeof AuthenticatedSearchRoute
   '/shares': typeof AuthenticatedSharesRoute
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRouteWithChildren
   '/_authenticated/family': typeof AuthenticatedFamilyRoute
+  '/_authenticated/offline': typeof AuthenticatedOfflineRoute
   '/_authenticated/reminders': typeof AuthenticatedRemindersRoute
   '/_authenticated/search': typeof AuthenticatedSearchRoute
   '/_authenticated/shares': typeof AuthenticatedSharesRoute
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/documents'
     | '/family'
+    | '/offline'
     | '/reminders'
     | '/search'
     | '/shares'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/documents'
     | '/family'
+    | '/offline'
     | '/reminders'
     | '/search'
     | '/shares'
@@ -194,6 +205,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/documents'
     | '/_authenticated/family'
+    | '/_authenticated/offline'
     | '/_authenticated/reminders'
     | '/_authenticated/search'
     | '/_authenticated/shares'
@@ -284,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRemindersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/offline': {
+      id: '/_authenticated/offline'
+      path: '/offline'
+      fullPath: '/offline'
+      preLoaderRoute: typeof AuthenticatedOfflineRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/family': {
       id: '/_authenticated/family'
       path: '/family'
@@ -341,6 +360,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRouteWithChildren
   AuthenticatedFamilyRoute: typeof AuthenticatedFamilyRoute
+  AuthenticatedOfflineRoute: typeof AuthenticatedOfflineRoute
   AuthenticatedRemindersRoute: typeof AuthenticatedRemindersRoute
   AuthenticatedSearchRoute: typeof AuthenticatedSearchRoute
   AuthenticatedSharesRoute: typeof AuthenticatedSharesRoute
@@ -352,6 +372,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRouteWithChildren,
   AuthenticatedFamilyRoute: AuthenticatedFamilyRoute,
+  AuthenticatedOfflineRoute: AuthenticatedOfflineRoute,
   AuthenticatedRemindersRoute: AuthenticatedRemindersRoute,
   AuthenticatedSearchRoute: AuthenticatedSearchRoute,
   AuthenticatedSharesRoute: AuthenticatedSharesRoute,

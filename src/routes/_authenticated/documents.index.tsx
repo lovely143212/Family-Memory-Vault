@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Upload, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_authenticated/documents")({
+export const Route = createFileRoute("/_authenticated/documents/")({
   head: () => ({ meta: [{ title: "Documents — Family Vault" }] }),
   component: DocumentsPage,
 });

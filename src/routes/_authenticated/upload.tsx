@@ -48,8 +48,8 @@ function UploadPage() {
   async function handleFile(f: File) {
     if (!f) return;
     if (f.size > 15 * 1024 * 1024) { toast.error("File must be under 15 MB"); return; }
-    if (!["application/pdf","image/jpeg","image/png","image/jpg"].includes(f.type)) {
-      toast.error("Only PDF, JPG, PNG"); return;
+    if (!["application/pdf","image/jpeg","image/png","image/jpg","image/webp"].includes(f.type)) {
+      toast.error("Only PDF, JPG, PNG, WEBP"); return;
     }
     setFile(f);
     if (!title) setTitle(f.name.replace(/\.[^.]+$/, ""));
@@ -130,14 +130,14 @@ function UploadPage() {
   return (
     <div className="mx-auto max-w-3xl">
       <h1 className="mb-2 font-display text-3xl font-bold">Upload document</h1>
-      <p className="mb-8 text-muted-foreground">PDF, JPG or PNG. Images are auto-analyzed with AI to fill the form.</p>
+      <p className="mb-8 text-muted-foreground">PDF, JPG, PNG or WEBP. Images are auto-analyzed with AI to fill the form.</p>
 
       <form onSubmit={submit} className="space-y-5 rounded-2xl border bg-surface-elevated p-6">
         <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/30 bg-primary-soft/40 p-8 text-center transition hover:border-primary/60">
           <UploadIcon className="h-6 w-6 text-primary"/>
           <span className="font-medium">{file ? file.name : "Click to choose a file"}</span>
-          <span className="text-xs text-muted-foreground">PDF, JPG, PNG — up to 15 MB</span>
-          <input type="file" accept="application/pdf,image/jpeg,image/png" className="hidden"
+          <span className="text-xs text-muted-foreground">PDF, JPG, PNG, WEBP — up to 15 MB</span>
+          <input type="file" accept="application/pdf,image/jpeg,image/png,image/webp" className="hidden"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}/>
         </label>
 

@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, FileText, Upload, Bell, Users, Search, Activity, LogOut, Vault, Menu, X } from "lucide-react";
+import { LayoutDashboard, FileText, Upload, Bell, Users, Search, Activity, LogOut, Vault, Menu, X, Share2, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,10 @@ const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/documents", label: "Documents", icon: FileText },
   { to: "/upload", label: "Upload", icon: Upload },
-  { to: "/search", label: "Search", icon: Search },
+  { to: "/search", label: "AI Search", icon: Search },
   { to: "/reminders", label: "Reminders", icon: Bell },
+  { to: "/shares", label: "Shares", icon: Share2 },
+  { to: "/offline", label: "Offline", icon: ShieldCheck },
   { to: "/family", label: "Family", icon: Users },
   { to: "/activity", label: "Activity", icon: Activity },
 ];

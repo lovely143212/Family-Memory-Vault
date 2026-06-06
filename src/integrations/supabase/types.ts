@@ -55,6 +55,99 @@ export type Database = {
           },
         ]
       }
+      document_shares: {
+        Row: {
+          created_at: string
+          created_by: string
+          document_id: string
+          expires_at: string
+          family_id: string
+          id: string
+          max_views: number | null
+          revoked: boolean
+          token: string
+          view_count: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          document_id: string
+          expires_at: string
+          family_id: string
+          id?: string
+          max_views?: number | null
+          revoked?: boolean
+          token: string
+          view_count?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          document_id?: string
+          expires_at?: string
+          family_id?: string
+          id?: string
+          max_views?: number | null
+          revoked?: boolean
+          token?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_shares_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_shares_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_views: {
+        Row: {
+          document_id: string
+          family_id: string
+          id: string
+          user_id: string
+          viewed_at: string
+        }
+        Insert: {
+          document_id: string
+          family_id: string
+          id?: string
+          user_id: string
+          viewed_at?: string
+        }
+        Update: {
+          document_id?: string
+          family_id?: string
+          id?: string
+          user_id?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_views_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_views_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           category: Database["public"]["Enums"]["doc_category"]
@@ -65,6 +158,8 @@ export type Database = {
           file_path: string
           file_size: number | null
           id: string
+          is_favorite: boolean
+          is_pinned: boolean
           issue_date: string | null
           mime_type: string | null
           notes: string | null
@@ -82,6 +177,8 @@ export type Database = {
           file_path: string
           file_size?: number | null
           id?: string
+          is_favorite?: boolean
+          is_pinned?: boolean
           issue_date?: string | null
           mime_type?: string | null
           notes?: string | null
@@ -99,6 +196,8 @@ export type Database = {
           file_path?: string
           file_size?: number | null
           id?: string
+          is_favorite?: boolean
+          is_pinned?: boolean
           issue_date?: string | null
           mime_type?: string | null
           notes?: string | null
@@ -301,6 +400,16 @@ export type Database = {
       is_family_owner: {
         Args: { _family: string; _user: string }
         Returns: boolean
+      }
+      resolve_share: {
+        Args: { _token: string }
+        Returns: {
+          category: Database["public"]["Enums"]["doc_category"]
+          document_id: string
+          file_path: string
+          mime_type: string
+          title: string
+        }[]
       }
     }
     Enums: {

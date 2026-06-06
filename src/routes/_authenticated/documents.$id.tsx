@@ -1,11 +1,14 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { CategoryBadge } from "@/components/category-badge";
 import { ExpiryPill } from "@/components/expiry-pill";
+import { DocumentViewer } from "@/components/document-viewer";
 import { Button } from "@/components/ui/button";
-import { Trash2, Download, ArrowLeft } from "lucide-react";
+import { Trash2, ArrowLeft, Star, Pin, CloudDownload, CloudOff, Share2 } from "lucide-react";
 import { logActivity } from "@/hooks/use-current-family";
+import { cacheDocument, removeCached, isCached } from "@/lib/offline-vault";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -17,6 +20,9 @@ export const Route = createFileRoute("/_authenticated/documents/$id")({
 function DocumentDetail() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
+  const qc = useQueryClient();
+  const [offline, setOffline] = useState(false);
+  const [savingOffline, setSavingOffline] = useState(false);
 
   const q = useQuery({
     queryKey: ["document", id],
@@ -28,12 +34,81 @@ function DocumentDetail() {
     },
   });
 
+  // Record a view + check offline cache
+  useEffect(() => {
+    if (!q.data) return;
+    (async () => {
+      setOffline(await isCached(id));
+      const { data: u } = await supabase.auth.getUser();
+      if (u.user) {
+        await supabase.from("document_views").insert({
+          document_id: id,
+          family_id: q.data.doc.family_id,
+          user_id: u.user.id,
+        });
+      }
+    })();
+  }, [q.data, id]);
+
+  async function toggleFavorite() {
+    if (!q.data) return;
+    const next = !q.data.doc.is_favorite;
+    const { error } = await supabase.from("documents").update({ is_favorite: next }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success(next ? "Added to favorites" : "Removed from favorites");
+    qc.invalidateQueries({ queryKey: ["document", id] });
+    qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
+  }
+
+  async function togglePin() {
+    if (!q.data) return;
+    const next = !q.data.doc.is_pinned;
+    const { error } = await supabase.from("documents").update({ is_pinned: next }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success(next ? "Pinned to dashboard" : "Unpinned");
+    qc.invalidateQueries({ queryKey: ["document", id] });
+    qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
+  }
+
+  async function toggleOffline() {
+    if (!q.data?.url || !q.data.doc) return;
+    if (offline) {
+      await removeCached(id);
+      setOffline(false);
+      toast.success("Removed from offline vault");
+      return;
+    }
+    setSavingOffline(true);
+    try {
+      const res = await fetch(q.data.url);
+      const bytes = await res.arrayBuffer();
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) throw new Error("Not signed in");
+      await cacheDocument({
+        id, user_id: u.user.id,
+        title: q.data.doc.title,
+        category: q.data.doc.category,
+        mime_type: q.data.doc.mime_type ?? "application/octet-stream",
+        document_number: q.data.doc.document_number,
+        expiry_date: q.data.doc.expiry_date,
+        bytes,
+      });
+      setOffline(true);
+      toast.success("Encrypted & saved offline");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save offline");
+    } finally {
+      setSavingOffline(false);
+    }
+  }
+
   async function remove() {
     if (!q.data) return;
     if (!confirm("Delete this document permanently?")) return;
     await supabase.storage.from("documents").remove([q.data.doc.file_path]);
     const { error } = await supabase.from("documents").delete().eq("id", id);
     if (error) return toast.error(error.message);
+    await removeCached(id).catch(() => {});
     await logActivity({ family_id: q.data.doc.family_id, action: "deleted", entity_type: "document", entity_id: id, metadata: { title: q.data.doc.title } });
     toast.success("Deleted");
     navigate({ to: "/documents" });
@@ -53,18 +128,25 @@ function DocumentDetail() {
           <h1 className="font-display text-3xl font-bold">{d.title}</h1>
           {d.document_number && <p className="mt-1 text-muted-foreground">#{d.document_number}</p>}
         </div>
-        <div className="flex gap-2">
-          {q.data.url && <Button asChild variant="outline"><a href={q.data.url} target="_blank" rel="noreferrer"><Download className="mr-2 h-4 w-4"/>Download</a></Button>}
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={toggleFavorite} variant="outline" className={d.is_favorite ? "border-warning text-warning" : ""}>
+            <Star className={`mr-2 h-4 w-4 ${d.is_favorite ? "fill-current" : ""}`}/>{d.is_favorite ? "Favorited" : "Favorite"}
+          </Button>
+          <Button onClick={togglePin} variant="outline" className={d.is_pinned ? "border-primary text-primary" : ""}>
+            <Pin className={`mr-2 h-4 w-4 ${d.is_pinned ? "fill-current" : ""}`}/>{d.is_pinned ? "Pinned" : "Pin"}
+          </Button>
+          <Button onClick={toggleOffline} variant="outline" disabled={savingOffline}>
+            {offline ? <CloudOff className="mr-2 h-4 w-4"/> : <CloudDownload className="mr-2 h-4 w-4"/>}
+            {savingOffline ? "Saving…" : offline ? "Offline ✓" : "Save offline"}
+          </Button>
+          <Button asChild variant="outline"><Link to="/shares"><Share2 className="mr-2 h-4 w-4"/>Share</Link></Button>
           <Button onClick={remove} variant="outline" className="text-danger hover:text-danger"><Trash2 className="mr-2 h-4 w-4"/>Delete</Button>
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <section className="lg:col-span-2 rounded-2xl border bg-surface-elevated p-2">
-          {q.data.url && d.mime_type?.startsWith("image/") && <img src={q.data.url} alt={d.title} className="w-full rounded-xl"/>}
-          {q.data.url && d.mime_type === "application/pdf" && (
-            <iframe src={q.data.url} title={d.title} className="h-[70vh] w-full rounded-xl"/>
-          )}
+        <section className="lg:col-span-2 h-[75vh]">
+          {q.data.url && <DocumentViewer url={q.data.url} mimeType={d.mime_type} title={d.title}/>}
         </section>
         <aside className="space-y-4 rounded-2xl border bg-surface-elevated p-6">
           <Field label="Issue date" value={d.issue_date ? format(new Date(d.issue_date), "PP") : "—"}/>

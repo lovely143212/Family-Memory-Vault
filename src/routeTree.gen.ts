@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as AuthenticatedUploadRouteImport } from './routes/_authenticated/upload'
+import { Route as AuthenticatedSharesRouteImport } from './routes/_authenticated/shares'
 import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
 import { Route as AuthenticatedRemindersRouteImport } from './routes/_authenticated/reminders'
 import { Route as AuthenticatedFamilyRouteImport } from './routes/_authenticated/family'
@@ -56,6 +57,11 @@ const InviteTokenRoute = InviteTokenRouteImport.update({
 const AuthenticatedUploadRoute = AuthenticatedUploadRouteImport.update({
   id: '/upload',
   path: '/upload',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSharesRoute = AuthenticatedSharesRouteImport.update({
+  id: '/shares',
+  path: '/shares',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSearchRoute = AuthenticatedSearchRouteImport.update({
@@ -105,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/family': typeof AuthenticatedFamilyRoute
   '/reminders': typeof AuthenticatedRemindersRoute
   '/search': typeof AuthenticatedSearchRoute
+  '/shares': typeof AuthenticatedSharesRoute
   '/upload': typeof AuthenticatedUploadRoute
   '/invite/$token': typeof InviteTokenRoute
   '/share/$token': typeof ShareTokenRoute
@@ -120,6 +127,7 @@ export interface FileRoutesByTo {
   '/family': typeof AuthenticatedFamilyRoute
   '/reminders': typeof AuthenticatedRemindersRoute
   '/search': typeof AuthenticatedSearchRoute
+  '/shares': typeof AuthenticatedSharesRoute
   '/upload': typeof AuthenticatedUploadRoute
   '/invite/$token': typeof InviteTokenRoute
   '/share/$token': typeof ShareTokenRoute
@@ -137,6 +145,7 @@ export interface FileRoutesById {
   '/_authenticated/family': typeof AuthenticatedFamilyRoute
   '/_authenticated/reminders': typeof AuthenticatedRemindersRoute
   '/_authenticated/search': typeof AuthenticatedSearchRoute
+  '/_authenticated/shares': typeof AuthenticatedSharesRoute
   '/_authenticated/upload': typeof AuthenticatedUploadRoute
   '/invite/$token': typeof InviteTokenRoute
   '/share/$token': typeof ShareTokenRoute
@@ -154,6 +163,7 @@ export interface FileRouteTypes {
     | '/family'
     | '/reminders'
     | '/search'
+    | '/shares'
     | '/upload'
     | '/invite/$token'
     | '/share/$token'
@@ -169,6 +179,7 @@ export interface FileRouteTypes {
     | '/family'
     | '/reminders'
     | '/search'
+    | '/shares'
     | '/upload'
     | '/invite/$token'
     | '/share/$token'
@@ -185,6 +196,7 @@ export interface FileRouteTypes {
     | '/_authenticated/family'
     | '/_authenticated/reminders'
     | '/_authenticated/search'
+    | '/_authenticated/shares'
     | '/_authenticated/upload'
     | '/invite/$token'
     | '/share/$token'
@@ -249,6 +261,13 @@ declare module '@tanstack/react-router' {
       path: '/upload'
       fullPath: '/upload'
       preLoaderRoute: typeof AuthenticatedUploadRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/shares': {
+      id: '/_authenticated/shares'
+      path: '/shares'
+      fullPath: '/shares'
+      preLoaderRoute: typeof AuthenticatedSharesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/search': {
@@ -324,6 +343,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFamilyRoute: typeof AuthenticatedFamilyRoute
   AuthenticatedRemindersRoute: typeof AuthenticatedRemindersRoute
   AuthenticatedSearchRoute: typeof AuthenticatedSearchRoute
+  AuthenticatedSharesRoute: typeof AuthenticatedSharesRoute
   AuthenticatedUploadRoute: typeof AuthenticatedUploadRoute
 }
 
@@ -334,6 +354,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFamilyRoute: AuthenticatedFamilyRoute,
   AuthenticatedRemindersRoute: AuthenticatedRemindersRoute,
   AuthenticatedSearchRoute: AuthenticatedSearchRoute,
+  AuthenticatedSharesRoute: AuthenticatedSharesRoute,
   AuthenticatedUploadRoute: AuthenticatedUploadRoute,
 }
 
